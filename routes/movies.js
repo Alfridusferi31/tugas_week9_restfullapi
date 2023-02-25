@@ -27,8 +27,8 @@ router.get('/:id', function (req, res) {
 router.post('/', function (req, res) {
   //   console.log(req.body);
   pool.query(
-    `INSERT INTO movies (title, genres, year)
-        VALUES (${req.body.title}, ${req.body.genres}, ${req.body.year});`,
+    `INSERT INTO movies ("title", "genres", "year") VALUES ($1, $2, $3);`,
+    [req.body.title, req.body.genres, req.body.year],
     (error, results) => {
       if (error) {
         throw error;
