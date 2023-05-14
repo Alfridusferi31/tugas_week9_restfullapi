@@ -3,13 +3,20 @@ var router = express.Router();
 
 var pool = require('../query.js');
 
-router.get('/', function (req, res) {
-  pool.query('SELECT * FROM movies', (error, results) => {
-    if (error) {
-      throw error;
+var auth = require('../middleware/authMiddleware.js');
+
+router.get('/', auth, function (req, res) {
+  pool.query(
+    `SELECT * FROM movies ${
+      req.query.limit ? 'LIMIT ' + req.query.limit : ''
+    } `,
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      res.json(results.rows);
     }
-    res.json(results.rows);
-  });
+  );
 });
 
 router.get('/:id', function (req, res) {
