@@ -1,9 +1,9 @@
-var Pool = require('pg').Pool;
+var Pool = require("pg").Pool;
 var pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'movies',
-  password: 'fathyfahrezy',
+  user: "postgres",
+  host: "localhost",
+  database: "mydatabasemovies",
+  password: "admin",
   port: 5432,
 });
 

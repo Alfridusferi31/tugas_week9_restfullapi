@@ -1,17 +1,25 @@
-const { verifyToken } = require('../utils/auth');
+module.exports = function (err, req, res, next) {
+  let statusCode = 500;
+  let errArr = [];
 
-const authMiddleware = (req, res, next) => {
-  // console.log(data);
-  const beareHeader = req.headers['authorization'];
-
-  const token = beareHeader.split(' ')[1];
-  const data = verifyToken(token);
-
-  if (data.role === 'Construction Worker') {
-    next();
-  } else {
-    res.status(401).json({ message: 'Unauthorized' });
+  switch (err.name) {
+    case "SequelizeUniqueConstraintError":
+    case "SequelizeValidationError":
+      statusCode = 400;
+      err.errors.forEach((errData) => {
+        errArr.push(errData.message);
+      });
+      break;
+    case "JsonWebTokenError":
+      statusCode = 400;
+      errArr.push("Token invalid!");
+      break;
+    default:
+      let message = err.msg || "Internal Server Error";
+      errArr.push(message);
+      statusCode = err.status || statusCode;
+      break;
   }
-};
 
-module.exports = authMiddleware;
+  res.status(statusCode).json(errArr.toString());
+};

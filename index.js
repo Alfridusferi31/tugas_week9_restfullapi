@@ -1,21 +1,26 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var morgan = require('morgan');
-var app = express();
+const express = require("express");
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
+const app = express();
+const swaggerUI = require("swagger-ui-express");
+const swaggerSpec = require("./swagger");
+const authRoutes = require("./routes/router");
 
-app.use(morgan('common'));
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
-require('dotenv').config();
-
+app.use(morgan("common"));
+require("dotenv").config();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//Require the Router we defined in movies.js
-var movies = require('./routes/movies.js');
-var users = require('./routes/users.js');
+app.use("/", authRoutes);
 
-//Use the Router on the sub route /movies
-app.use('/movies', movies);
-app.use('/users', users);
+const movies = require("./routes/movies.js");
+app.use("/movies", movies);
 
-app.listen(3000);
+const users = require("./routes/users.js");
+app.use("/users", users);
+
+app.listen(3000, () => {
+  console.log("Server started on http://localhost:3000");
+});

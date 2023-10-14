@@ -1,15 +1,18 @@
-var express = require('express');
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
+const pool = require("../query.js");
+const auth = require("../middleware/authMiddleware.js");
 
-var pool = require('../query.js');
+router.use(auth);
 
-var auth = require('../middleware/authMiddleware.js');
+router.get("/", function (req, res) {
+  const limit = req.query.limit || 10;
+  const page = req.query.page || 1;
+  const offset = (page - 1) * limit;
 
-router.get('/', auth, function (req, res) {
   pool.query(
-    `SELECT * FROM movies ${
-      req.query.limit ? 'LIMIT ' + req.query.limit : ''
-    } `,
+    `SELECT * FROM movies LIMIT $1 OFFSET $2`,
+    [limit, offset],
     (error, results) => {
       if (error) {
         throw error;
@@ -19,9 +22,10 @@ router.get('/', auth, function (req, res) {
   );
 });
 
-router.get('/:id', function (req, res) {
+router.get("/:id", function (req, res) {
   pool.query(
-    `SELECT * FROM movies WHERE id = ${req.params.id}`,
+    "SELECT * FROM movies WHERE id = $1",
+    [req.params.id],
     (error, results) => {
       if (error) {
         throw error;
@@ -31,51 +35,45 @@ router.get('/:id', function (req, res) {
   );
 });
 
-router.post('/', function (req, res) {
-  //   console.log(req.body);
+router.post("/", function (req, res) {
+  const { title, genres, year } = req.body;
   pool.query(
-    `INSERT INTO movies ("title", "genres", "year") VALUES ($1, $2, $3);`,
-    [req.body.title, req.body.genres, req.body.year],
+    "INSERT INTO movies (title, genres, year) VALUES ($1, $2, $3)",
+    [title, genres, year],
     (error, results) => {
       if (error) {
         throw error;
       }
-      res.status(201).json({
-        status: 'success',
-      });
+      res.status(201).json({ status: "success" });
     }
   );
 });
 
-router.delete('/:id', function (req, res) {
-  //   console.log(req.body);
+router.delete("/:id", function (req, res) {
   pool.query(
-    `DELETE FROM movies WHERE id = ${req.params.id}`,
+    "DELETE FROM movies WHERE id = $1",
+    [req.params.id],
     (error, results) => {
       if (error) {
         throw error;
       }
-      res.status(201).json({
-        status: 'success',
-      });
+      res.status(201).json({ status: "success" });
     }
   );
 });
 
-router.put('/:id', function (req, res) {
-  //   console.log(req.body);
+router.put("/:id", function (req, res) {
+  const { year } = req.body;
   pool.query(
-    `UPDATE movies SET year = "${req.body.year}" WHERE id = ${req.params.id}`,
+    "UPDATE movies SET year = $1 WHERE id = $2",
+    [year, req.params.id],
     (error, results) => {
       if (error) {
         throw error;
       }
-      res.status(201).json({
-        status: 'success',
-      });
+      res.status(201).json({ status: "success" });
     }
   );
 });
 
-//export this router to use in our index.js
 module.exports = router;
